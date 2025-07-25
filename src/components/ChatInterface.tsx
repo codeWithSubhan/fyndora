@@ -342,6 +342,7 @@ const ChatInterface = ({ onMenuClick }: ChatInterfaceProps) => {
             {/* Chat Messages Area */}
             <div className="flex-1 flex flex-col px-4 py-6 overflow-y-auto space-y-4 font-mono">
               {/* Long Message */}
+              <div className="mt-auto"></div>
               <div className="bg-[#f1f3f5] rounded-lg p-4 border border-gray-200 font-mono ml-auto max-w-[90%]">
                 <p className="text-gray-800 text-sm leading-relaxed font-mono">
                   Hi, Can you do a research and write a detailed research paper
