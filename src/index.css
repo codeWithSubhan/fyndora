@@ -118,3 +118,23 @@ All colors MUST be HSL.
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Make swiper bullets black */
+.swiper-pagination-bullet {
+  background-color: black !important;
+}
+
+.swiper-pagination-bullet-active {
+  background-color: black !important;
+}
+/* 
+.my-swiper {
+  position: relative; 
+
+.my-swiper .swiper-pagination {
+  position: absolute;
+  bottom: 0; 
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+} */

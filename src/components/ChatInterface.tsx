@@ -1,5 +1,13 @@
 import React, { useState, useRef } from "react";
-import { Mic, Menu, ArrowLeft, Paperclip, X } from "lucide-react";
+import {
+  Mic,
+  Menu,
+  ArrowLeft,
+  Paperclip,
+  X,
+  Plus,
+  SendHorizontal,
+} from "lucide-react";
 import SuggestionPills from "./SuggestionPills";
 import ProductCard from "./chat/components/ProductCard";
 import ProductCardSkeleton from "./chat/components/ProductCardSkeleton";
@@ -10,6 +18,16 @@ import { Product } from "./chat/types";
 import WebResultsCarousel from "./chat/components/WebResultsCarousel";
 import RightSideTabs from "./ui/RightSideTabs";
 import InputBtn from "./ui/InputBtn";
+import { motion, AnimatePresence } from "framer-motion";
+import UploadImageCarosel from "./chat/components/UploadImageCarosel";
+
+import { Swiper, SwiperSlide } from "swiper/react";
+
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/pagination";
+import { Pagination } from "swiper/modules";
+import { toast } from "sonner";
 
 interface ChatInterfaceProps {
   onMenuClick: () => void;
@@ -26,17 +44,32 @@ const GENDERS = ["Man", "Woman", "Unisex"];
 
 const ChatInterface = ({ onMenuClick }: ChatInterfaceProps) => {
   const [inputValue, setInputValue] = useState("");
+  const [chatQuery, setChatQuery] = useState("");
   const [showProducts, setShowProducts] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedChatImage, setSelectedChatImage] = useState<File[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isWebSearching, setIsWebSearching] = useState(false);
   const [webSearchResults, setWebSearchResults] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const chatFileInputRef = useRef<HTMLInputElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<"AI Search" | "Web Search">(
     "AI Search"
   );
+
+  const isTyping = chatQuery.trim() !== "";
+
+  const images = [
+    "https://i.postimg.cc/cLtWGhG9/shoes-removebg-preview.png",
+    "https://i.postimg.cc/cLtWGhG9/shoes-removebg-preview.png",
+    "https://i.postimg.cc/cLtWGhG9/shoes-removebg-preview.png",
+    "https://i.postimg.cc/cLtWGhG9/shoes-removebg-preview.png",
+    "https://i.postimg.cc/cLtWGhG9/shoes-removebg-preview.png",
+    "https://i.postimg.cc/cLtWGhG9/shoes-removebg-preview.png",
+    "https://i.postimg.cc/cLtWGhG9/shoes-removebg-preview.png",
+  ];
 
   // Mock product data
   const mockProducts: Product[] = [
@@ -191,8 +224,28 @@ const ChatInterface = ({ onMenuClick }: ChatInterfaceProps) => {
     }
   };
 
+  const handleChatImageUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    // toast.error("Already uploaded file!");
+    const file = event.target.files?.[0];
+
+    console.log(selectedChatImage.find((prev) => prev.name === file.name));
+    if (file && file.type.startsWith("image/")) {
+      if (selectedChatImage.find((prev) => prev.name === file.name)) {
+        console.log("hiiiiiiiiiii");
+        return toast.error("Already uploaded file!");
+      }
+      setSelectedChatImage((prev) => [...prev, file]);
+    }
+  };
+
   const handleAttachClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleChatAttachClick = () => {
+    chatFileInputRef.current?.click();
   };
 
   const removeSelectedImage = () => {
@@ -200,6 +253,14 @@ const ChatInterface = ({ onMenuClick }: ChatInterfaceProps) => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
+
+  interface RemoveChatSelectedImageProps {
+    file: File;
+  }
+
+  const removeChatSelectedImage = (file: File): void => {
+    setSelectedChatImage(selectedChatImage.filter((prev) => prev !== file));
   };
 
   const handleProductClick = (product: Product) => {
@@ -234,6 +295,8 @@ const ChatInterface = ({ onMenuClick }: ChatInterfaceProps) => {
     setIsVisible(false);
     setWebSearchResults([]);
   };
+
+  console.log(selectedChatImage);
 
   return (
     <div className="flex-1 flex bg-white min-h-screen relative overflow-hidden font-mono">
@@ -338,7 +401,12 @@ const ChatInterface = ({ onMenuClick }: ChatInterfaceProps) => {
         // Split layout: Chat on left, Products on right
         <div className="flex flex-1 font-mono bg-gray-50">
           {/* Left side - Chat/Search Section */}
-          <div className="w-1/2 flex flex-col relative bg-gray-50 pb-4 font-mono">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="w-1/2 flex flex-col relative bg-gray-50 pb-4 font-mono"
+          >
             {/* Chat Messages Area */}
             <div className="flex-1 flex flex-col px-4 py-6 overflow-y-auto space-y-4 font-mono">
               {/* Long Message */}
@@ -379,13 +447,99 @@ const ChatInterface = ({ onMenuClick }: ChatInterfaceProps) => {
               </div>
             </div>
 
-            <div className="px-4">
-              <InputBtn placeholder="Ask for anything" />
+            <div className="mx-4 relative z-10">
+              {selectedChatImage.length > 0 && (
+                <div className="bg-white p-4 absolute bottom-12 rounded-xl border border-gray-200 max-w-full mb-1">
+                  <Swiper
+                    slidesPerView={
+                      selectedChatImage.length >= 4
+                        ? 4
+                        : selectedChatImage.length
+                    }
+                    spaceBetween={12}
+                    pagination={{ clickable: true }}
+                    modules={[Pagination]}
+                    className="max-w-full my-swiper"
+                  >
+                    {selectedChatImage.map((file) => (
+                      <SwiperSlide key={file.name} className="max-w-fit">
+                        <div className="relative h-32 w-32 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                          <button
+                            onClick={() => removeChatSelectedImage(file)}
+                            className="absolute top-1 right-1 bg-black p-1 rounded-full hover:bg-gray-800"
+                          >
+                            <X className="w-4 h-4 text-gray-50" />
+                          </button>
+
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={file.name}
+                            className="object-contain h-full w-full"
+                          />
+                        </div>
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </div>
+              )}
+
+              <div className="mt-0 sm:mt-0 font-mono ">
+                <input
+                  type="file"
+                  ref={chatFileInputRef}
+                  onChange={handleChatImageUpload}
+                  accept="image/*"
+                  className="hidden font-mono"
+                />
+
+                <div className="relative max-w-full mx-auto font-mono ">
+                  <input
+                    type="text"
+                    placeholder="Ask for anything"
+                    value={chatQuery}
+                    onChange={(e) => setChatQuery(e.target.value)}
+                    className={`w-full px-4 py-3 rounded-xl border border-gray-300 outline-none 
+              bg-white shadow-sm text-sm sm:text-base placeholder-gray-400 transition-all pr-14 ${
+                isTyping ? "pr-24" : "pr-14"
+              }`}
+                  />
+
+                  {/* Attach icon */}
+                  <button
+                    onClick={handleChatAttachClick}
+                    className={`absolute top-1/2 transform -translate-y-1/2 p-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-all duration-200 ${
+                      isTyping ? "right-16" : "right-4"
+                    }`}
+                    title="Attach image"
+                  >
+                    <Plus size={18} />
+                  </button>
+
+                  {/* Send icon */}
+                  <button
+                    // onClick={handleSend}
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black text-white rounded-full hover:bg-gray-800 shadow transition-all duration-200 ${
+                      isTyping
+                        ? "opacity-100 scale-100 pointer-events-auto"
+                        : "opacity-0 scale-90 pointer-events-none"
+                    }`}
+                    title="Send message"
+                  >
+                    <SendHorizontal size={18} />
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Right side - Products Section */}
-          <div className="w-1/2 flex relative flex-col gap-4 p-4  m-4 shadow-sm  rounded-xl bg-white border border-gray-200 font-mono">
+
+          <motion.div
+            initial={{ x: "100%", opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ type: "tween", duration: 0.5 }}
+            className="w-1/2 flex relative flex-col gap-4 p-4  m-4 shadow-sm  rounded-xl bg-white border border-gray-200 font-mono"
+          >
             <h2 className="text-lg font-semibold text-gray-800 font-mono">
               Agent that you are creating
             </h2>
@@ -408,33 +562,30 @@ const ChatInterface = ({ onMenuClick }: ChatInterfaceProps) => {
               </div>
             </div>
 
-            <div
-              className={`absolute top-[-1rem] right-[-1rem] left-[-1rem] bottom-[-1rem] p-4 pb-2.5 m-4 shadow-sm rounded-xl bg-white  border-gray-200 font-mono transition-transform duration-500 ease-in-out ${
-                isVisible
-                  ? "translate-x-0 opacity-100"
-                  : "translate-x-full opacity-100"
-              }`}
-            >
-              <ProductDetailsPopup
-                product={selectedProduct}
-                isWebSearching={isWebSearching}
-                webSearchResults={webSearchResults}
-                onClose={closeProductPopup}
-              />
-            </div>
-          </div>
+            <AnimatePresence>
+              {isVisible && (
+                <motion.div
+                  initial={{ x: "100%", opacity: 1 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: "100%", opacity: 1 }}
+                  transition={{ type: "tween", duration: 0.5 }}
+                  className="absolute top-[-1rem] right-[-1rem] left-[-1rem] bottom-[-1rem] 
+                     p-4 pb-2.5 m-4 shadow-sm rounded-xl bg-white border border-gray-200 
+                     font-mono z-50"
+                >
+                  <ProductDetailsPopup
+                    product={selectedProduct}
+                    isWebSearching={isWebSearching}
+                    webSearchResults={webSearchResults}
+                    onClose={closeProductPopup}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         </div>
       )}
 
-      {/* Product Details Popup */}
-      {/* <ProductDetailsPopup
-        product={selectedProduct}
-        isWebSearching={isWebSearching}
-        webSearchResults={webSearchResults}
-        onClose={closeProductPopup}
-      /> */}
-
-      {/* Loading overlay */}
       {isSearching && <LoadingOverlay />}
 
       {/* Background decoration - hidden on mobile */}
