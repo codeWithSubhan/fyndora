@@ -41,7 +41,7 @@ const ProductDetailsPopup: React.FC<ProductDetailsPopupProps> = ({
 
   return (
     <div className="overflow-auto h-full relative">
-      <div className="flex justify-between items-center mb-6 sticky top-0 z-10 bg-white ">
+      <div className="flex justify-between items-center mb-6 sticky top-0 z-10 bg-white">
         <h2 className="text-base sm:text-lg font-semibold text-gray-800 font-mono">
           Product Details
         </h2>

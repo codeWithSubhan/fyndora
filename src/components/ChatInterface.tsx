@@ -55,6 +55,7 @@ const ChatInterface = ({ onMenuClick }: ChatInterfaceProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatFileInputRef = useRef<HTMLInputElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [isProductsVisible, setIsProductsVisible] = useState(true);
   const [activeTab, setActiveTab] = useState<"AI Search" | "Web Search">(
     "AI Search"
   );
@@ -399,13 +400,13 @@ const ChatInterface = ({ onMenuClick }: ChatInterfaceProps) => {
         </div>
       ) : (
         // Split layout: Chat on left, Products on right
-        <div className="flex flex-1 font-mono bg-gray-50">
+        <div className="sm:flex sm:flex-1 w-full font-mono bg-gray-50">
           {/* Left side - Chat/Search Section */}
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="w-1/2 flex flex-col relative bg-gray-50 pb-4 font-mono"
+            className="sm:w-1/2 w-full flex flex-col relative bg-gray-50 pb-4 font-mono"
           >
             {/* Chat Messages Area */}
             <div className="flex-1 flex flex-col px-4 py-6 overflow-y-auto space-y-4 font-mono">
@@ -534,55 +535,72 @@ const ChatInterface = ({ onMenuClick }: ChatInterfaceProps) => {
 
           {/* Right side - Products Section */}
 
-          <motion.div
-            initial={{ x: "100%", opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ type: "tween", duration: 0.5 }}
-            className="w-1/2 flex relative flex-col gap-4 p-4  m-4 shadow-sm  rounded-xl bg-white border border-gray-200 font-mono"
-          >
-            <h2 className="text-lg font-semibold text-gray-800 font-mono">
-              Agent that you are creating
-            </h2>
+          <AnimatePresence>
+            {isProductsVisible && (
+              <motion.div
+                initial={{ x: "100%", opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: "100%", opacity: 1 }}
+                transition={{ type: "tween", duration: 0.5 }}
+                className="sm:w-1/2 w-full flex absolute left-0 top-0 bottom-0 sm:top-0 sm:right-0 sm:relative flex-col gap-4 p-4 sm:m-4 sm:shadow-sm z-50 rounded-xl bg-white sm:border border-gray-200 font-mono 
+             sm:h-[calc(100vh-2rem)] h-[calc(100vh-0rem)] max:sm:h-auto sm:max-h-screen overflow-y-auto"
+              >
+                <div className="flex justify-between items-center mb-6 sticky top-0 z-10 bg-white ">
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-800 font-mono">
+                    Agent that you are creating
+                  </h2>
 
-            <RightSideTabs />
+                  <button
+                    onClick={() => setIsProductsVisible(false)}
+                    className="p-1 sm:p-2 block sm:hidden  hover:bg-gray-100 rounded-full transition-colors group"
+                  >
+                    <X
+                      size={18}
+                      className="text-gray-600 group-hover:text-gray-900"
+                    />
+                  </button>
+                </div>
 
-            <div className="flex-1 overflow-y-auto font-mono">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 font-mono">
-                {isSearching
-                  ? Array.from({ length: 6 }).map((_, i) => (
-                      <ProductCardSkeleton key={i} />
-                    ))
-                  : mockProducts.map((product) => (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        onProductClick={handleProductClick}
-                      />
-                    ))}
-              </div>
-            </div>
+                <RightSideTabs />
 
-            <AnimatePresence>
-              {isVisible && (
-                <motion.div
-                  initial={{ x: "100%", opacity: 1 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: "100%", opacity: 1 }}
-                  transition={{ type: "tween", duration: 0.5 }}
-                  className="absolute top-[-1rem] right-[-1rem] left-[-1rem] bottom-[-1rem] 
+                <div className="flex-1 overflow-y-auto">
+                  <div className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-4">
+                    {isSearching
+                      ? Array.from({ length: 6 }).map((_, i) => (
+                          <ProductCardSkeleton key={i} />
+                        ))
+                      : mockProducts.map((product) => (
+                          <ProductCard
+                            key={product.id}
+                            product={product}
+                            onProductClick={handleProductClick}
+                          />
+                        ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {isVisible && (
+              <motion.div
+                initial={{ x: "100%", opacity: 1 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: "100%", opacity: 1 }}
+                transition={{ type: "tween", duration: 0.5 }}
+                className="absolute top-[-1rem] right-[-1rem] left-[-1rem] bottom-[-1rem] 
                      p-4 pb-2.5 m-4 shadow-sm rounded-xl bg-white border border-gray-200 
                      font-mono z-50"
-                >
-                  <ProductDetailsPopup
-                    product={selectedProduct}
-                    isWebSearching={isWebSearching}
-                    webSearchResults={webSearchResults}
-                    onClose={closeProductPopup}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+              >
+                <ProductDetailsPopup
+                  product={selectedProduct}
+                  isWebSearching={isWebSearching}
+                  webSearchResults={webSearchResults}
+                  onClose={closeProductPopup}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
 
